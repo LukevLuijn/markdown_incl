@@ -1,0 +1,9 @@
+# Editor
+.vscode/*
+belt_calc/.idea/vcs.xml
+.idea
+
+# Intermediate files
+build/*
+cmake-build-debug/*
+*.old
