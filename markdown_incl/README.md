@@ -15,8 +15,8 @@ make
 
 ## Script
 
-The included bash script helps with file names because the program takes absolute paths, recommended to make an alias for this script.
-You'll need to change the path on line 7 to the actual path.
+The included [script](./script/markdown_incl.sh) helps with file names because the program takes absolute paths, you'll
+need to change the path on line 7 to the actual path. It is recommended to make an alias for this script.
 
 ```bash
 alias markdown_incl="bash ~/path/to/script/markdown_incl.sh $1 $2"
