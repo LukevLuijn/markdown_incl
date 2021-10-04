@@ -1,41 +1,52 @@
+- [Heading](#heading)
+    * [Sub-heading](#sub-heading)
+        + [Sub-sub-heading](#sub-sub-heading)
+- [Heading](#heading-1)
+    * [Sub-heading](#sub-heading-1)
+        + [Sub-sub-heading](#sub-sub-heading-1)
+- [Heading](#heading-2)
+    * [Sub-heading](#sub-heading-2)
+        + [Sub-sub-heading](#sub-sub-heading-2)
 
 
-# Sample document 
+# Heading levels
 
-This is a sample document.
+> This is a fixture to test heading levels
 
-|Sample image|
-|:---:|
-| <img width="200" src="https://previews.123rf.com/images/aquir/aquir1311/aquir131100316/23569861-sample-grunge-red-round-stamp.jpg"  alt="sample image"/> |
-| Image 1 - sample image| 
+<!-- toc -->
 
+## Heading
 
-## Sub document
+This is an h1 heading
 
-This is a sub document. It has a picture of a bird.
+### Sub-heading
 
-| <img width="200" src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"  alt="bird"/> |
-|:---:|
-|Image 2 - image of a bird|
+This is an h2 heading
 
+#### Sub-sub-heading
 
-### Sub sub document
+This is an h3 heading
 
-Sub sub document, it sadly has no image of a bird, it does however contain a diagram.
+## Heading
 
-| <img width="200" src="https://astah.net/wp-content/uploads/2020/11/auto-create-class-diagram-detailed.png"  alt="some diagram"/> |
-|:---|
-| Diagram 1 - diagram |
+This is an h1 heading
 
+### Sub-heading
 
+This is an h2 heading
 
+#### Sub-sub-heading
 
+This is an h3 heading
 
-# Bibliography
+## Heading
 
+This is an h1 heading
 
-|#|Source|
-|:---:|:---|
-| 1 | 123RF. (n.d.). Stock Photo. Retrieved October 4, 2021, from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html | 
-| 2 | K. (n.d.). Sample Image Results. Remove.Bg. Retrieved October 4, 2021, from https://www.remove.bg/sample_images | 
-| 3 | Astah. (2020, November 16). Class diagrams. https://astah.net/support/astah-pro/user-guide/class-diagrams/ | 
+### Sub-heading
+
+This is an h2 heading
+
+#### Sub-sub-heading
+
+This is an h3 heading
