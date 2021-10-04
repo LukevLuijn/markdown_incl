@@ -10,12 +10,11 @@
 
 void print_help()
 {
-    std::vector<std::string> features =
-            {
-                    std::string("to include a markdown file set \"!sub\"-flag."),
-                    std::string("to use automatic asset numbering set \"!assets\"-flag with associated keywords."),
-                    std::string("to centralize all urls in one place (bottom of document) set for every url the \"!url\"-flag.")
-            };
+    std::vector<std::string> features = {
+            std::string("to include a markdown file set \"!sub\"-flag."),
+            std::string("to use automatic asset numbering set \"!assets\"-flag with associated keywords."),
+            std::string(
+                    "to centralize all urls in one place (bottom of document) set for every url the \"!url\"-flag.")};
 
     std::string program_title = "markdown_incl";
     Utils::Command::help(program_title);
@@ -29,14 +28,17 @@ void print_examples()
     std::vector<std::string> lines;
     Utils::FileIO::readFile(help_doc_path, lines, false);
 
-    for(std::string& line : lines)
+    for (std::string& line : lines)
     {
         if (line[0] == '!')
         {
             std::vector<std::string> words = Utils::Misc::divide(line, ' ');
             for (std::size_t i = 0; i < words.size(); ++i)
             {
-                std::cout << Utils::Console::convertToColor(words[i], (i == 0) ? Utils::Console::BRIGHT_GREEN : Utils::Console::BRIGHT_YELLOW) << " ";
+                std::cout << Utils::Console::convertToColor(words[i],
+                                                            (i == 0) ? Utils::Console::BRIGHT_GREEN
+                                                                     : Utils::Console::BRIGHT_YELLOW)
+                          << " ";
             }
             std::cout << std::endl;
         }
@@ -92,7 +94,7 @@ void check_input(int argc, char** argv)
     Utils::Console::debug("Program start", arguments, true);
 }
 
-bool get_lines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer)
+bool get_lines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer, uint16_t& nFiles)
 {
     auto getFileName = [](const std::string& path) -> std::string {
         uint64_t start_pos = path.find_last_of('/') + 1;
@@ -115,13 +117,11 @@ bool get_lines(const std::string& path, const std::string& flag, std::vector<std
         else
         {
             std::string include_path = local_path + Utils::Misc::divide(line, ' ')[1];
-            if (!get_lines(include_path, flag, buffer))
+            if (!get_lines(include_path, flag, buffer, nFiles))
             {
                 return false;
             }
-            std::vector<std::string> params = {std::string("base: ").append(getFileName(path)),
-                                               std::string("\tsub: ").append(getFileName(include_path))};
-            Utils::Console::debug("file inserted", params);
+            ++nFiles;
         }
     }
     return true;
@@ -129,7 +129,6 @@ bool get_lines(const std::string& path, const std::string& flag, std::vector<std
 
 void manage_assets(std::vector<std::string>& lines, const std::string& target)
 {
-
     std::map<std::string, uint16_t> keywords;
     for (auto it = lines.begin(); it != lines.end(); ++it)
     {
@@ -164,6 +163,13 @@ void manage_assets(std::vector<std::string>& lines, const std::string& target)
             }
         }
     }
+    std::vector<std::string> stats;
+    stats.reserve(keywords.size());
+    for (const auto& key : keywords)
+    {
+        stats.emplace_back(std::string(key.first).append("\tx").append(std::to_string(key.second)));
+    }
+    Utils::Console::debug("assets managed", stats, true);
 }
 
 void manage_urls(std::vector<std::string>& lines, const std::string& target)
@@ -182,13 +188,15 @@ void manage_urls(std::vector<std::string>& lines, const std::string& target)
         }
     }
     lines.insert(lines.end(), urls.begin(), urls.end());
+    Utils::Console::debug(
+            "urls managed",
+            std::vector<std::string>{std::string(target).append("\t\tx").append(std::to_string(urls.size()))},
+            true);
 }
 
-void substitute()
+void manage_include(std::vector<std::string>& buffer, const std::string& target)
 {
-    std::string flag = std::string("!").append(Utils::Command::getArg("i").value);
     std::string source_doc = Utils::Command::getArg("s").value;
-    std::string output_doc = Utils::Command::getArg("o").value;
 
     std::vector<std::string> source_lines;
     if (!Utils::FileIO::readFile(source_doc, source_lines, false))
@@ -196,22 +204,14 @@ void substitute()
         Utils::Console::error("could not read file", source_doc);
         exit(EXIT_SUCCESS);
     }
-    std::vector<std::string> buffer;
-    if (!get_lines(source_doc, flag, buffer))
+    uint16_t nFiles = 0;
+    if (!get_lines(source_doc, target, buffer, nFiles))
     {
         exit(EXIT_SUCCESS);
     }
-
-    manage_assets(buffer, "!assets");
-    manage_urls(buffer, "!url");
-
-    if (!Utils::FileIO::writeToFile(output_doc, buffer, false, false))
-    {
-        Utils::Console::error("could not write to file", output_doc);
-        exit(EXIT_SUCCESS);
-    }
-
-    Utils::Console::debug("substitution complete");
+    Utils::Console::debug("includes managed",
+                          std::vector<std::string>{std::string(target).append("\t\tx").append(std::to_string(nFiles))},
+                          true);
 }
 
 int main(int argc, char** argv)
@@ -219,7 +219,19 @@ int main(int argc, char** argv)
     Utils::Console::info("checking input..");
 
     check_input(argc, argv);
-    substitute();
+
+    std::string output_doc = Utils::Command::getArg("o").value;
+    std::vector<std::string> lines;
+
+    manage_include(lines, "!sub");
+    manage_urls(lines, "!url");
+    manage_assets(lines, "!assets");
+
+    if (!Utils::FileIO::writeToFile(output_doc, lines, false, false))
+    {
+        Utils::Console::error("could not write to file", output_doc);
+        exit(EXIT_SUCCESS);
+    }
 
     Utils::Console::info("program complete");
     return EXIT_SUCCESS;

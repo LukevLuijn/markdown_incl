@@ -42,20 +42,20 @@ sub doc text.
 ### sub sub doc
 
 dit is een sub sub doc.
-link1
-link2
-link3
-link4
-link6
-link7
-link8
-link6
-link7
-link8
-link5
-link6
-link7
-link8
-link6
-link7
-link8
+- link1
+- link2
+- link3
+- link4
+- link6
+- link7
+- link8
+- link6
+- link7
+- link8
+- link5
+- link6
+- link7
+- link8
+- link6
+- link7
+- link8
