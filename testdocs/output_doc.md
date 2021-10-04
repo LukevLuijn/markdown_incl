@@ -42,20 +42,17 @@ sub doc text.
 ### sub sub doc
 
 dit is een sub sub doc.
-- link1
-- link2
-- link3
-- link4
-- link6
-- link7
-- link8
-- link6
-- link7
-- link8
-- link5
-- link6
-- link7
-- link8
-- link6
-- link7
-- link8
+
+# Bibliography
+
+
+|#|Source|
+|:---:|:---|
+| 1 | link1 | 
+| 2 | link2 | 
+| 3 | link3 | 
+| 4 | link4 | 
+| 5 | link6 | 
+| 6 | link7 | 
+| 7 | link8 | 
+| 8 | link5 | 
