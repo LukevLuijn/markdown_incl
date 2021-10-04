@@ -5,6 +5,14 @@
 #include "Convert.h"
 #include "Setup.h"
 
+/**
+ *  TODO
+ *
+ *  apa generated sources seem to be split during auto format.
+ *  make separate flags for inserting TOC and Source list.
+ */
+
+
 int main(int argc, char** argv)
 {
     Utils::Console::info("checking input..");
