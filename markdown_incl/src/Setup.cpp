@@ -83,11 +83,6 @@ namespace Program
             Utils::Console::error("no output file given!");
             print_help();
         }
-        else
-        {
-            Utils::Console::error("no arguments detected");
-            print_help();
-        }
 
         std::vector<std::string> files{
                 Utils::Command::getArg("s").value,

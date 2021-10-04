@@ -20,6 +20,7 @@ namespace Program
         {
             return false;
         }
+        manage_ignores(lines, "!ignore");
         manage_urls(lines, "!url");
         manage_assets(lines, "!assets");
 
@@ -36,6 +37,7 @@ namespace Program
     {
         std::string local_path = path.substr(0, path.find_last_of('/') + 1);
         std::vector<std::string> source_lines;
+
         if (!Utils::FileIO::readFile(path, source_lines, false))
         {
             Utils::Console::error("could not read file", path);
@@ -59,23 +61,59 @@ namespace Program
         }
         return true;
     }
-
-    /* static */ void Convert::manage_assets(std::vector<std::string>& lines, const std::string& target)
+    /* static */ bool Convert::get_keywords(const std::string& target, std::vector<std::string>& keywords,
+                                            std::vector<std::string>& lines)
     {
-        std::map<std::string, uint16_t> keywords;
         for (auto it = lines.begin(); it != lines.end(); ++it)
         {
             if (it->find(target) != std::string::npos)
             {
                 std::vector<std::string> words = Utils::Misc::divide(*it, ' ');
-                for (std::size_t i = 1; i < words.size(); ++i)
-                {
-                    keywords.insert(keywords.begin(), std::make_pair("!" + words[i], 1));
-                }
-
+                keywords.insert(keywords.end(), words.begin() + 1, words.end());
                 lines.erase(it);
-                break;
+                return true;
             }
+        }
+        // target not found
+        Utils::Console::debug("flag not found", target);
+        return false;
+    }
+    /* static */ void Convert::manage_ignores(std::vector<std::string>& lines, const std::string& target)
+    {
+        std::vector<std::string> buffer;
+        if (!get_keywords(target, buffer, lines))
+        {
+            // no keys found, nothing to do here.
+            return;
+        }
+
+        for (auto it = lines.begin(); it != lines.end();)
+        {
+            auto pos = it->find(buffer[0] + " ");
+            if (pos == 0)
+            {
+                lines.erase(it);
+                continue;
+            }
+            else if (pos != std::string::npos)
+            {
+                *it = it->substr(0, pos);
+            }
+            ++it;
+        }
+    }
+    /* static */ void Convert::manage_assets(std::vector<std::string>& lines, const std::string& target)
+    {
+        std::vector<std::string> buffer;
+        if (!get_keywords(target, buffer, lines))
+        {
+            // no keys found, nothing to do here.
+            return;
+        }
+        std::map<std::string, uint16_t> keywords;
+        for (const std::string& key : buffer)
+        {
+            keywords["!" + key] = 1;
         }
         for (std::string& line : lines)
         {
@@ -100,7 +138,7 @@ namespace Program
         stats.reserve(keywords.size());
         for (const auto& key : keywords)
         {
-            stats.emplace_back(std::string(key.first).append("\tx").append(std::to_string(key.second)));
+            stats.emplace_back(std::string("x").append(std::to_string(key.second).append("\t").append(key.first)));
         }
         Utils::Console::debug("assets found", stats, true);
     }
@@ -139,8 +177,9 @@ namespace Program
 
         lines.insert(lines.end(), urls.begin(), urls.end());
 
-        std::vector<std::string> params = {std::string(target).append("\t\tx").append(std::to_string(urls.size())),
-                                           std::string("filtered").append("\tx").append(std::to_string(duplicates))};
+        std::vector<std::string> params = {
+                std::string("x").append(std::to_string(urls.size()).append("\t").append(target)),
+                std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
         Utils::Console::debug("urls found", params, true);
     }
 
@@ -158,10 +197,8 @@ namespace Program
         {
             return false;
         }
-        Utils::Console::debug(
-                "includes found",
-                std::vector<std::string>{std::string(target).append("\t\tx").append(std::to_string(nFiles))},
-                true);
+        std::string param = std::string("x").append(std::to_string(nFiles)).append("\t").append(target);
+        Utils::Console::debug("includes found", std::vector<std::string>{param}, true);
         return true;
     }
 }// namespace Program

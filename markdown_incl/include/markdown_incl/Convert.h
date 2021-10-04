@@ -16,12 +16,16 @@ namespace Program
         static bool convert_document(const std::string& src, const std::string& out);
 
     private:
-        static bool get_lines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer,
-                              uint16_t& nFiles);
+        static void manage_ignores(std::vector<std::string>& lines, const std::string& target);
         static void manage_assets(std::vector<std::string>& lines, const std::string& target);
         static void manage_urls(std::vector<std::string>& lines, const std::string& target);
         static bool manage_include(std::vector<std::string>& buffer, const std::string& target,
                                    const std::string& source);
+
+        static bool get_lines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer,
+                              uint16_t& nFiles);
+        static bool get_keywords(const std::string& target, std::vector<std::string>& buffer,
+                                 std::vector<std::string>& lines);
     };
 }// namespace Program
 
