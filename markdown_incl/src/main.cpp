@@ -56,7 +56,6 @@ void check_input(int argc, char** argv)
     std::vector<std::string> arguments = {
             std::string("source file:\t").append(files[0]),
             std::string("output file:\t").append(files[1]),
-            std::string("convert pdf:\t").append((Utils::Command::isArgGiven("c") ? "yes" : "no")),
             std::string("include flag:\t!").append(Utils::Command::getArg("i").value)};
 
     Utils::Console::debug("Program start", arguments, true);
@@ -110,55 +109,23 @@ void substitute()
         Utils::Console::error("could not read file", source_doc);
         exit(EXIT_SUCCESS);
     }
-
-//    std::string local_path = source_doc.substr(0, source_doc.find_last_of('/') + 1);
     std::vector<std::string> buffer;
     if (!getLines(source_doc, flag, buffer))
     {
         exit(EXIT_SUCCESS);
     }
-    else if (!Utils::FileIO::writeToFile(output_doc, buffer, true, false))
+    else if (!Utils::FileIO::writeToFile(output_doc, buffer, false, false))
     {
         Utils::Console::error("could not write to file", output_doc);
         exit(EXIT_SUCCESS);
     }
 
     Utils::Console::debug("substitution complete");
-
-    //    for (std::size_t i = 0; i < source_lines.size(); ++i)
-    //    {
-    //        // no flag -> add line to file.
-    //        if (source_lines[i].find(flag) == std::string::npos)
-    //        {
-    //            if (!Utils::FileIO::writeToFile(output_doc, std::vector<std::string>{source_lines[i]}, (i != 0), false))
-    //            {
-    //                Utils::Console::error("could not write to file", output_doc);
-    //            }
-    //        }
-    //        // flag detected -> insert included file.
-    //        else
-    //        {
-    //            std::string path = local_path + Utils::Misc::divide(source_lines[i], ' ')[1];
-    //            std::vector<std::string> include_file_lines;
-    //            if (!Utils::FileIO::readFile(path, include_file_lines, false))
-    //            {
-    //                Utils::Console::error("could not read file", path);
-    //                exit(EXIT_SUCCESS);
-    //            }
-    //            if (!Utils::FileIO::writeToFile(output_doc, include_file_lines, true, false))
-    //            {
-    //                Utils::Console::error("could not write to file", output_doc);
-    //                exit(EXIT_SUCCESS);
-    //            }
-    //
-    //            Utils::Console::debug("included ", path);
-    //        }
-    //    }
 }
 
 int main(int argc, char** argv)
 {
-    Utils::Console::info("checking input");
+    Utils::Console::info("checking input..");
 
     check_input(argc, argv);
     substitute();
