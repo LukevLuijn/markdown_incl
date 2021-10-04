@@ -96,11 +96,6 @@ void check_input(int argc, char** argv)
 
 bool get_lines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer, uint16_t& nFiles)
 {
-    auto getFileName = [](const std::string& path) -> std::string {
-        uint64_t start_pos = path.find_last_of('/') + 1;
-        return path.substr(start_pos, path.length() - start_pos);
-    };
-
     std::string local_path = path.substr(0, path.find_last_of('/') + 1);
     std::vector<std::string> source_lines;
     if (!Utils::FileIO::readFile(path, source_lines, false))
@@ -169,7 +164,7 @@ void manage_assets(std::vector<std::string>& lines, const std::string& target)
     {
         stats.emplace_back(std::string(key.first).append("\tx").append(std::to_string(key.second)));
     }
-    Utils::Console::debug("assets managed", stats, true);
+    Utils::Console::debug("assets found", stats, true);
 }
 
 void manage_urls(std::vector<std::string>& lines, const std::string& target)
@@ -189,7 +184,7 @@ void manage_urls(std::vector<std::string>& lines, const std::string& target)
     }
     lines.insert(lines.end(), urls.begin(), urls.end());
     Utils::Console::debug(
-            "urls managed",
+            "urls found",
             std::vector<std::string>{std::string(target).append("\t\tx").append(std::to_string(urls.size()))},
             true);
 }
@@ -209,7 +204,7 @@ void manage_include(std::vector<std::string>& buffer, const std::string& target)
     {
         exit(EXIT_SUCCESS);
     }
-    Utils::Console::debug("includes managed",
+    Utils::Console::debug("includes found",
                           std::vector<std::string>{std::string(target).append("\t\tx").append(std::to_string(nFiles))},
                           true);
 }
@@ -217,7 +212,6 @@ void manage_include(std::vector<std::string>& buffer, const std::string& target)
 int main(int argc, char** argv)
 {
     Utils::Console::info("checking input..");
-
     check_input(argc, argv);
 
     std::string output_doc = Utils::Command::getArg("o").value;
@@ -227,12 +221,9 @@ int main(int argc, char** argv)
     manage_urls(lines, "!url");
     manage_assets(lines, "!assets");
 
-    if (!Utils::FileIO::writeToFile(output_doc, lines, false, false))
-    {
-        Utils::Console::error("could not write to file", output_doc);
-        exit(EXIT_SUCCESS);
-    }
+    (!Utils::FileIO::writeToFile(output_doc, lines, false, false))
+            ? Utils::Console::error("could not write to file", output_doc)
+            : Utils::Console::info("program complete");
 
-    Utils::Console::info("program complete");
     return EXIT_SUCCESS;
 }
