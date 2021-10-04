@@ -62,6 +62,42 @@ void check_input(int argc, char** argv)
     Utils::Console::debug("Program start", arguments, true);
 }
 
+bool getLines(const std::string& path, const std::string& flag, std::vector<std::string>& buffer)
+{
+    auto getFileName = [](const std::string& path) -> std::string
+    {
+        uint64_t start_pos = path.find_last_of('/') + 1;
+        return path.substr(start_pos, path.length() - start_pos);
+    };
+
+    std::string local_path = path.substr(0, path.find_last_of('/') + 1);
+    std::vector<std::string> source_lines;
+    if (!Utils::FileIO::readFile(path, source_lines, false))
+    {
+        Utils::Console::error("could not read file", path);
+        return false;
+    }
+    for (const std::string& line : source_lines)
+    {
+        if (line.find(flag) == std::string::npos)
+        {
+            buffer.emplace_back(line);
+        }
+        else
+        {
+            std::string include_path = local_path + Utils::Misc::divide(line, ' ')[1];
+            if (!getLines(include_path, flag, buffer))
+            {
+                return false;
+            }
+            std::vector<std::string> params = {std::string("base: ").append(getFileName(path)),
+                                               std::string("\tsub: ").append(getFileName(include_path))};
+            Utils::Console::debug("file inserted", params);
+        }
+    }
+    return true;
+}
+
 void substitute()
 {
     std::string flag = std::string("!").append(Utils::Command::getArg("i").value);
@@ -75,38 +111,49 @@ void substitute()
         exit(EXIT_SUCCESS);
     }
 
-
-    std::string local_path = source_doc.substr(0, source_doc.find_last_of('/')+1);
-
-    for (std::size_t i = 0; i < source_lines.size(); ++i)
+//    std::string local_path = source_doc.substr(0, source_doc.find_last_of('/') + 1);
+    std::vector<std::string> buffer;
+    if (!getLines(source_doc, flag, buffer))
     {
-        // no flag -> add line to file.
-        if (source_lines[i].find(flag) == std::string::npos)
-        {
-            if (!Utils::FileIO::writeToFile(output_doc, std::vector<std::string>{source_lines[i]}, (i != 0), false))
-            {
-                Utils::Console::error("could not write to file", output_doc);
-            }
-        }
-        // flag detected -> insert included file.
-        else
-        {
-            std::string path = local_path + Utils::Misc::divide(source_lines[i], ' ')[1];
-            std::vector<std::string> include_file_lines;
-            if (!Utils::FileIO::readFile(path, include_file_lines, false))
-            {
-                Utils::Console::error("could not read file", path);
-                exit(EXIT_SUCCESS);
-            }
-            if (!Utils::FileIO::writeToFile(output_doc, include_file_lines, true, false))
-            {
-                Utils::Console::error("could not write to file", output_doc);
-                exit(EXIT_SUCCESS);
-            }
-
-            Utils::Console::debug("included ", path);
-        }
+        exit(EXIT_SUCCESS);
     }
+    else if (!Utils::FileIO::writeToFile(output_doc, buffer, true, false))
+    {
+        Utils::Console::error("could not write to file", output_doc);
+        exit(EXIT_SUCCESS);
+    }
+
+    Utils::Console::debug("substitution complete");
+
+    //    for (std::size_t i = 0; i < source_lines.size(); ++i)
+    //    {
+    //        // no flag -> add line to file.
+    //        if (source_lines[i].find(flag) == std::string::npos)
+    //        {
+    //            if (!Utils::FileIO::writeToFile(output_doc, std::vector<std::string>{source_lines[i]}, (i != 0), false))
+    //            {
+    //                Utils::Console::error("could not write to file", output_doc);
+    //            }
+    //        }
+    //        // flag detected -> insert included file.
+    //        else
+    //        {
+    //            std::string path = local_path + Utils::Misc::divide(source_lines[i], ' ')[1];
+    //            std::vector<std::string> include_file_lines;
+    //            if (!Utils::FileIO::readFile(path, include_file_lines, false))
+    //            {
+    //                Utils::Console::error("could not read file", path);
+    //                exit(EXIT_SUCCESS);
+    //            }
+    //            if (!Utils::FileIO::writeToFile(output_doc, include_file_lines, true, false))
+    //            {
+    //                Utils::Console::error("could not write to file", output_doc);
+    //                exit(EXIT_SUCCESS);
+    //            }
+    //
+    //            Utils::Console::debug("included ", path);
+    //        }
+    //    }
 }
 
 int main(int argc, char** argv)

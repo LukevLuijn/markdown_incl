@@ -1,8 +1,7 @@
 # sub doc
 
-bla bla bla 
-bla bla bla 
-bla bla bla 
-bla bla bla 
-bla bla bla 
-bla bla bla 
+sub doc text.
+
+!sub sub_sub_doc.md
+
+!sub sub_sub_doc.md
