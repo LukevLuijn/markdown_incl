@@ -12,6 +12,8 @@
 
 namespace Program
 {
+    /* static */ std::vector<std::string> Convert::chapter_icon = {"# ", "## ", "### ", "#### "};
+
     /* static */ bool Convert::convert_document(const std::string& src, const std::string& out)
     {
         std::vector<std::string> lines;
@@ -23,6 +25,8 @@ namespace Program
         manage_ignores(lines, "!ignore");
         manage_urls(lines, "!url");
         manage_assets(lines, "!assets");
+        manage_chapters(lines, "!numbers");
+        manage_toc(lines, "!toc");
 
         if (!Utils::FileIO::writeToFile(out, lines, false, false))
         {
@@ -64,13 +68,18 @@ namespace Program
     /* static */ bool Convert::get_keywords(const std::string& target, std::vector<std::string>& keywords,
                                             std::vector<std::string>& lines)
     {
-        for (auto it = lines.begin(); it != lines.end(); ++it)
+        for (std::size_t i = 0; i < lines.size(); ++i)
         {
-            if (it->find(target) != std::string::npos)
+            if (lines[i].find(target) != std::string::npos)
             {
-                std::vector<std::string> words = Utils::Misc::divide(*it, ' ');
-                keywords.insert(keywords.end(), words.begin() + 1, words.end());
-                lines.erase(it);
+                uint64_t param_start = lines[i].find('=') + 1;
+                uint64_t param_end = lines[i].find(';');
+                std::string params = lines[i].substr(param_start, param_end - param_start);
+
+                std::vector<std::string> words = Utils::Misc::divide(params, ',');
+                keywords.insert(keywords.end(), words.begin(), words.end());
+
+                lines.erase(lines.begin() + static_cast<int64_t>(i));
                 return true;
             }
         }
@@ -145,6 +154,12 @@ namespace Program
 
     /* static */ void Convert::manage_urls(std::vector<std::string>& lines, const std::string& target)
     {
+        std::vector<std::string> buffer;
+        if (!get_keywords(target + "_title", buffer, lines))
+        {
+            buffer[0] = "Bibliography";
+        }
+
         std::vector<std::string> urls;
         uint16_t duplicates = 0;
         for (auto it = lines.begin(); it != lines.end();)
@@ -171,8 +186,8 @@ namespace Program
             urls[i] = std::string("| ").append(std::to_string(i + 1)).append(" | ").append(urls[i]).append(" | ");
         }
 
-        lines.emplace_back("\n# Bibliography\n");
-        lines.emplace_back("\n|#|Source|");
+        lines.emplace_back("# " + buffer[0]);
+        lines.emplace_back("\n|Index|Source|");
         lines.emplace_back("|:---:|:---|");
 
         lines.insert(lines.end(), urls.begin(), urls.end());
@@ -200,5 +215,112 @@ namespace Program
         std::string param = std::string("x").append(std::to_string(nFiles)).append("\t").append(target);
         Utils::Console::debug("includes found", std::vector<std::string>{param}, true);
         return true;
+    }
+    void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target)
+    {
+        std::vector<std::string> buffer;
+        if (!get_keywords(target, buffer, lines) || (!buffer.empty() && buffer[0] == "false"))
+        {
+            // no keys found, nothing to do here.
+            return;
+        }
+
+        auto get_number = [&](std::vector<uint16_t>& list, uint16_t current) -> std::string {
+            ++list[current - 1];
+            std::string index;
+            for (std::size_t i = 0; i < current; ++i)
+            {
+                index.append(std::to_string(list[i])).append(".");
+            }
+            index.append(" ");
+            for (std::size_t i = current; i < list.size(); ++i)
+            {
+                list[i] = 0;
+            }
+
+            return index;
+        };
+
+        std::vector<uint16_t> indices(4, 0);
+        std::vector<uint16_t> counters(4, 0);
+        for (std::string& line : lines)
+        {
+            for (std::size_t i = 0; i < chapter_icon.size(); ++i)
+            {
+                if (line.substr(0, chapter_icon[i].size()) == chapter_icon[i])
+                {
+                    line.insert(chapter_icon[i].size(), get_number(indices, static_cast<uint16_t>(i + 1)));
+                    ++counters[i];
+                }
+            }
+        }
+
+        std::vector<std::string> params;
+        for (std::size_t i = 0; i < counters.size(); ++i)
+        {
+            if (counters[i] != 0)
+            {
+                params.emplace_back(std::string("x")
+                                            .append(std::to_string(counters[i]))
+                                            .append("\theader ")
+                                            .append(std::to_string(i + 1)));
+            }
+        }
+        Utils::Console::debug("headers found", params, true);
+    }
+    void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target)
+    {
+        std::vector<std::string> key_buffer;
+        if (!get_keywords(target, key_buffer, lines) || key_buffer[0] == "false")
+        {
+            // no keys found, nothing to do here.
+            return;
+        }
+        if (key_buffer[1].empty())
+        {
+            key_buffer[1] = "Table of contents";
+        }
+        if (key_buffer[2].empty())
+        {
+            key_buffer[2] = "0";
+        }
+
+        std::vector<std::pair<std::string, uint16_t>> chapters;
+        uint16_t counter = 0;
+        for (auto& line : lines)
+        {
+            for (std::size_t i = 0; i < chapter_icon.size(); ++i)
+            {
+                if (line.substr(0, chapter_icon[i].size()) == chapter_icon[i])
+                {
+                    std::string title = line.substr(chapter_icon[i].size(), line.size() - chapter_icon[i].size());
+                    chapters.emplace_back(std::make_pair(title, i));
+                    line.append(" <a name=\"chapter" + std::to_string(counter) + "\"></a>");
+                    ++counter;
+                }
+            }
+        }
+
+        std::vector<std::string> toc = {std::string("# ").append(key_buffer[1]).append("\n")};
+        for (std::size_t i = 0; i < chapters.size(); ++i)
+        {
+            std::vector<std::string> words = Utils::Misc::divide(chapters[i].first, ' ');
+            std::string entry = std::string("- ").append(words[0].substr(0, words[0].size()-1)).append(" [");
+
+            for (auto it = words.begin() + 1; it != words.end(); ++it)
+            {
+                entry.append(*it).append((std::next(it) != words.end()) ? " " : "");
+            }
+
+            entry.append("](#chapter").append(std::to_string(i)).append(")");
+
+            for (uint16_t tab = 0; tab < chapters[i].second; ++tab)
+            {
+                entry = std::string("\t").append(entry);
+            }
+            toc.emplace_back(entry);
+        }
+
+        lines.insert(lines.begin() + std::stoi(key_buffer[2]), toc.begin(), toc.end());
     }
 }// namespace Program

@@ -1,52 +1,77 @@
-- [Heading](#heading)
-    * [Sub-heading](#sub-heading)
-        + [Sub-sub-heading](#sub-sub-heading)
-- [Heading](#heading-1)
-    * [Sub-heading](#sub-heading-1)
-        + [Sub-sub-heading](#sub-sub-heading-1)
-- [Heading](#heading-2)
-    * [Sub-heading](#sub-heading-2)
-        + [Sub-sub-heading](#sub-sub-heading-2)
 
 
-# Heading levels
+# table of content
 
-> This is a fixture to test heading levels
+- 1 [Sample document](#chapter0)
+	- 1.1 [Sub document](#chapter1)
+		- 1.1.1 [Sub sub document](#chapter2)
+- 2 [Sample document](#chapter3)
+	- 2.1 [Sub document](#chapter4)
+		- 2.1.1 [Sub sub document](#chapter5)
+- 3 [test](#chapter6)
 
-<!-- toc -->
+# 1. Sample document <a name="chapter0"></a>
 
-## Heading
+This is a sample document.
 
-This is an h1 heading
+|Sample image|
+|:---:|
+| <img width="200" src="https://previews.123rf.com/images/aquir/aquir1311/aquir131100316/23569861-sample-grunge-red-round-stamp.jpg"  alt="sample image"/> |
+| Image 1 - sample image| 
 
-### Sub-heading
+from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html
 
-This is an h2 heading
+## 1.1. Sub document <a name="chapter1"></a>
 
-#### Sub-sub-heading
+This is a sub document. It has a picture of a bird.
 
-This is an h3 heading
+| <img width="200" src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"  alt="bird"/> |
+|:---:|
+|Image 2 - image of a bird|
 
-## Heading
 
-This is an h1 heading
+### 1.1.1. Sub sub document <a name="chapter2"></a>
 
-### Sub-heading
+Sub sub document, it sadly has no image of a bird, it does however contain a diagram.
 
-This is an h2 heading
+| <img width="200" src="https://astah.net/wp-content/uploads/2020/11/auto-create-class-diagram-detailed.png"  alt="some diagram"/> |
+|:---|
+| Diagram 1 - diagram |
 
-#### Sub-sub-heading
 
-This is an h3 heading
+# 2. Sample document <a name="chapter3"></a>
 
-## Heading
+This is a sample document.
 
-This is an h1 heading
+|Sample image|
+|:---:|
+| <img width="200" src="https://previews.123rf.com/images/aquir/aquir1311/aquir131100316/23569861-sample-grunge-red-round-stamp.jpg"  alt="sample image"/> |
+| Image 3 - sample image| 
 
-### Sub-heading
+from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html
 
-This is an h2 heading
+## 2.1. Sub document <a name="chapter4"></a>
 
-#### Sub-sub-heading
+This is a sub document. It has a picture of a bird.
 
-This is an h3 heading
+| <img width="200" src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"  alt="bird"/> |
+|:---:|
+|Image 4 - image of a bird|
+
+
+### 2.1.1. Sub sub document <a name="chapter5"></a>
+
+Sub sub document, it sadly has no image of a bird, it does however contain a diagram.
+
+| <img width="200" src="https://astah.net/wp-content/uploads/2020/11/auto-create-class-diagram-detailed.png"  alt="some diagram"/> |
+|:---|
+| Diagram 2 - diagram |
+
+
+# 3. test <a name="chapter6"></a>
+
+|Index|Source|
+|:---:|:---|
+| 1 | 123RF. (n.d.). Stock Photo. Retrieved October 4, 2021, | 
+| 2 | K. (n.d.). Sample Image Results. Remove.Bg. Retrieved October 4, 2021, from https://www.remove.bg/sample_images | 
+| 3 | Astah. (2020, November 16). Class diagrams. https://astah.net/support/astah-pro/user-guide/class-diagrams/ | 
