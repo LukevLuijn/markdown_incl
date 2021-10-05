@@ -1,16 +1,8 @@
 
 #include "Command.h"
 #include "Console.h"
-
 #include "Convert.h"
 #include "Setup.h"
-
-/**
- *  TODO
- *
- *  apa generated sources seem to be split during auto format.
- */
-
 
 int main(int argc, char** argv)
 {

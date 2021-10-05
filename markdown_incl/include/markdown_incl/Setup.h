@@ -10,8 +10,20 @@ namespace Program
     class Setup
     {
     public:
+        /**
+         * @brief Print help to console
+         */
         static void print_help();
+        /**
+         * @brief Print examples [docs/help.md] to console
+         */
         static void print_examples();
+        /**
+         * @brief Check if given parameters are correct.
+         *
+         * @param argc Argument count.
+         * @param argv Argument value.
+         */
         static void check_input(int argc, char** argv);
     };
 }// namespace Program
