@@ -29,12 +29,13 @@ Without alias
 
 ```bash
 cd path/to/build/folder
-./markdown_incl -s=source.md -o=output.md 
+./markdown_incl -s=path/to/source/document/source.md -o=path/to/output/document/output.md 
 ```
 
 With alias
 
 ```bash
+cd path/to/source/document
 markdown_incl -s=source.md -o=output.md
 ```
 
