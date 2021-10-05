@@ -25,8 +25,7 @@ namespace Program
         manage_ignores(lines, "!ignore");
         manage_urls(lines, "!url");
         manage_assets(lines, "!assets");
-        manage_chapters(lines, "!numbers");
-        manage_toc(lines, "!toc");
+        manage_chapters(lines, "!numbers", "!toc");
 
         if (!Utils::FileIO::writeToFile(out, lines, false, false))
         {
@@ -165,11 +164,13 @@ namespace Program
         Utils::Console::debug("includes found", std::vector<std::string>{param}, true);
         return true;
     }
-    /* static */ void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target,
+                                               const std::string& toc_target)
     {
         std::vector<std::string> buffer;
         if (!get_keywords(target, buffer, lines) || (!buffer.empty() && buffer[0] == "false"))
         {
+            manage_toc(lines, toc_target, false);
             // no keys found, nothing to do here.
             return;
         }
@@ -216,8 +217,11 @@ namespace Program
             }
         }
         Utils::Console::debug("headers found", params, true);
+
+        manage_toc(lines, toc_target, true);
     }
-    /* static */ void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target,
+                                          bool has_chapter_numbers)
     {
         std::vector<std::string> key_buffer;
         if (!get_keywords(target, key_buffer, lines) || key_buffer[0] == "false")
@@ -250,9 +254,11 @@ namespace Program
         for (std::size_t i = 0; i < chapters.size(); ++i)
         {
             std::vector<std::string> words = Utils::Misc::divide(chapters[i].first, ' ');
-            std::string entry = std::string("- ").append(words[0].substr(0, words[0].size() - 1)).append(" [");
+            std::string entry = std::string("- ")
+                                        .append((has_chapter_numbers) ? words[0].substr(0, words[0].size() - 1) : "")
+                                        .append(" [");
 
-            for (auto it = words.begin() + 1; it != words.end(); ++it)
+            for (auto it = words.begin() + ((has_chapter_numbers) ? 1 : 0); it != words.end(); ++it)
             {
                 entry.append(*it).append((std::next(it) != words.end()) ? " " : "");
             }

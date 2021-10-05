@@ -28,10 +28,11 @@ namespace Program
          *
          * @if !toc flag is set to true.
          *
-         * @param lines Lines of document
+         * @param lines Lines of document.
          * @param target Target for config.
+         * @param has_chapter_numbers True if document uses chapter numbers.
          */
-        static void manage_toc(std::vector<std::string>& lines, const std::string& target);
+        static void manage_toc(std::vector<std::string>& lines, const std::string& target, bool has_chapter_numbers);
         /**
          * @brief Adds chapter numbering to all headers and sub headers.
          *
@@ -39,8 +40,9 @@ namespace Program
          *
          * @param lines Lines of document
          * @param target Target for config.
+         * @param toc_target Target for TOC @see manage_toc
          */
-        static void manage_chapters(std::vector<std::string>& lines, const std::string& target);
+        static void manage_chapters(std::vector<std::string>& lines, const std::string& target, const std::string& toc_target);
         /**
          * @brief Reads ignore flag from config. filters all (sub)lines from document with this flag.
          *
