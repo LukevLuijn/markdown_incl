@@ -42,7 +42,8 @@ namespace Program
          * @param target Target for config.
          * @param toc_target Target for TOC @see manage_toc
          */
-        static void manage_chapters(std::vector<std::string>& lines, const std::string& target, const std::string& toc_target);
+        static void manage_chapters(std::vector<std::string>& lines, const std::string& target,
+                                    const std::string& toc_target);
         /**
          * @brief Reads ignore flag from config. filters all (sub)lines from document with this flag.
          *

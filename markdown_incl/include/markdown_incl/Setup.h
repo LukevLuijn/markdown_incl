@@ -11,10 +11,6 @@ namespace Program
     {
     public:
         /**
-         * @brief Print help to console
-         */
-        static void print_help();
-        /**
          * @brief Print examples [docs/help.md] to console
          */
         static void print_examples();

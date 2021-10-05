@@ -11,8 +11,6 @@ int main(int argc, char** argv)
 
     Program::Setup::check_input(argc, argv);
 
-
-
     std::string source = Utils::Command::getArg("s").value;
     std::string output = Utils::Command::getArg("o").value;
 
