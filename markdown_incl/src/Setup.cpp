@@ -14,20 +14,6 @@
 
 namespace Program
 {
-    /* static */ void Setup::print_help()
-    {
-        std::vector<std::string> features = {
-                std::string("to include a markdown file set \"!sub\"-flag."),
-                std::string("to use automatic asset numbering set \"!assets\"-flag with associated keywords."),
-                std::string("to centralize all urls in one place (bottom of document) set for every url the "
-                            "\"!url\"-flag.")};
-
-        std::string program_title = "markdown_incl";
-        Utils::Command::help(program_title);
-        Utils::Console::info("features of this program", features, true);
-        exit(EXIT_SUCCESS);
-    }
-
     /* static */ void Setup::print_examples()
     {
         std::string help_doc_path = "../docs/help.md";
@@ -55,13 +41,18 @@ namespace Program
         }
         exit(EXIT_SUCCESS);
     }
-
     /* static */ void Setup::check_input(int argc, char** argv)
     {
+        auto print_help = []() {
+            Utils::Command::help("markdown_incl");
+            exit(EXIT_SUCCESS);
+        };
+
         std::vector<std::pair<std::string, std::string>> help = {{"h", "print this help."},
                                                                  {"e", "show examples."},
                                                                  {"s", "source file."},
-                                                                 {"o", "output file."}};
+                                                                 {"o", "output file."},
+                                                                 {"d", "debug mode."}};
         Utils::Command::setCommandLineArguments(argc, argv);
         Utils::Command::setCommandLineHelp(help);
 
@@ -84,6 +75,11 @@ namespace Program
             print_help();
         }
 
+        if (Utils::Command::isArgGiven("d"))
+        {
+            Utils::Console::setMaxVerbosity(Utils::Console::DEBUG);
+        }
+
         std::vector<std::string> files{
                 Utils::Command::getArg("s").value,
                 Utils::Command::getArg("o").value,
@@ -98,6 +94,7 @@ namespace Program
         std::vector<std::string> arguments = {std::string("source file:\t").append(files[0]),
                                               std::string("output file:\t").append(files[1])};
 
-        Utils::Console::debug("Program start", arguments, true);
+        Utils::Console::debug("input", arguments, true);
+        Utils::Console::info("Program start");
     }
 }// namespace Program

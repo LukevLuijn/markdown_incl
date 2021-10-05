@@ -13,19 +13,38 @@ cmake ..
 make
 ```
 
-## Script
+## Alias
 
-The included [script](./script/markdown_incl.sh) helps with file names because the program takes absolute paths, you'll
-need to change the path on line 7 to the actual path. It is recommended to make an alias for this script.
+It is recommended to make an alias for quick use.
 
 ```bash
-alias markdown_incl="bash ~/path/to/script/markdown_incl.sh $1 $2"
+
+echo "$HOME/path/to/project/markdown_incl/markdown_incl/build/markdown_incl" >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ## Usage
 
+Without alias
+
 ```bash
-./markdown_incl -h 
+cd path/to/build/folder
+./markdown_incl -s=source.md -o=output.md 
 ```
+
+With alias
+
+```bash
+markdown_incl -s=source.md -o=output.md
+```
+
+## More options
+
+```bash
+./markdown_incl -h
+```
+
+
+
 
 
