@@ -1,3 +1,9 @@
+# Table of content
+
+- 1 [Sample document](#chapter0)
+	- 1.1 [Sub document](#chapter1)
+		- 1.1.1 [Sub sub document](#chapter2)
+- 2 [Literature](#chapter3)
 
 # 1. Sample document <a name="chapter0"></a>
 
