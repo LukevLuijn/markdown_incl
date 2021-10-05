@@ -9,7 +9,6 @@
  *  TODO
  *
  *  apa generated sources seem to be split during auto format.
- *  make separate flags for inserting TOC and Source list.
  */
 
 

@@ -28,6 +28,8 @@ namespace Program
                               uint16_t& nFiles);
         static bool get_keywords(const std::string& target, std::vector<std::string>& buffer,
                                  std::vector<std::string>& lines);
+        static bool insert_at_target(const std::string& target, const std::vector<std::string>& buffer,
+                                     std::vector<std::string>& lines);
 
     private:
         static std::vector<std::string> chapter_icon;

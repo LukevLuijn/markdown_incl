@@ -36,57 +36,6 @@ namespace Program
 
         return true;
     }
-    /* static */ bool Convert::get_lines(const std::string& path, const std::string& flag,
-                                         std::vector<std::string>& buffer, uint16_t& nFiles)
-    {
-        std::string local_path = path.substr(0, path.find_last_of('/') + 1);
-        std::vector<std::string> source_lines;
-
-        if (!Utils::FileIO::readFile(path, source_lines, false))
-        {
-            Utils::Console::error("could not read file", path);
-            return false;
-        }
-        for (const std::string& line : source_lines)
-        {
-            if (line.find(flag) == std::string::npos)
-            {
-                buffer.emplace_back(line);
-            }
-            else
-            {
-                std::string include_path = local_path + Utils::Misc::divide(line, ' ')[1];
-                if (!get_lines(include_path, flag, buffer, nFiles))
-                {
-                    return false;
-                }
-                ++nFiles;
-            }
-        }
-        return true;
-    }
-    /* static */ bool Convert::get_keywords(const std::string& target, std::vector<std::string>& keywords,
-                                            std::vector<std::string>& lines)
-    {
-        for (std::size_t i = 0; i < lines.size(); ++i)
-        {
-            if (lines[i].find(target) != std::string::npos)
-            {
-                uint64_t param_start = lines[i].find('=') + 1;
-                uint64_t param_end = lines[i].find(';');
-                std::string params = lines[i].substr(param_start, param_end - param_start);
-
-                std::vector<std::string> words = Utils::Misc::divide(params, ',');
-                keywords.insert(keywords.end(), words.begin(), words.end());
-
-                lines.erase(lines.begin() + static_cast<int64_t>(i));
-                return true;
-            }
-        }
-        // target not found
-        Utils::Console::debug("flag not found", target);
-        return false;
-    }
     /* static */ void Convert::manage_ignores(std::vector<std::string>& lines, const std::string& target)
     {
         std::vector<std::string> buffer;
@@ -151,7 +100,6 @@ namespace Program
         }
         Utils::Console::debug("assets found", stats, true);
     }
-
     /* static */ void Convert::manage_urls(std::vector<std::string>& lines, const std::string& target)
     {
         std::vector<std::string> buffer;
@@ -161,6 +109,7 @@ namespace Program
         }
 
         std::vector<std::string> urls;
+
         uint16_t duplicates = 0;
         for (auto it = lines.begin(); it != lines.end();)
         {
@@ -185,19 +134,19 @@ namespace Program
         {
             urls[i] = std::string("| ").append(std::to_string(i + 1)).append(" | ").append(urls[i]).append(" | ");
         }
+        std::vector<std::string> header = {"# " + buffer[0], "\n|Index|Source|", "|:---:|:---|"};
+        urls.insert(urls.begin(), header.begin(), header.end());
 
-        lines.emplace_back("# " + buffer[0]);
-        lines.emplace_back("\n|Index|Source|");
-        lines.emplace_back("|:---:|:---|");
+        if (!urls.empty())
+        {
+            std::vector<std::string> params = {
+                    std::string("x").append(std::to_string(urls.size()).append("\t").append(target)),
+                    std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
+            Utils::Console::debug("urls found", params, true);
 
-        lines.insert(lines.end(), urls.begin(), urls.end());
-
-        std::vector<std::string> params = {
-                std::string("x").append(std::to_string(urls.size()).append("\t").append(target)),
-                std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
-        Utils::Console::debug("urls found", params, true);
+            insert_at_target(target, urls, lines);
+        }
     }
-
     /* static */ bool Convert::manage_include(std::vector<std::string>& buffer, const std::string& target,
                                               const std::string& source)
     {
@@ -216,7 +165,7 @@ namespace Program
         Utils::Console::debug("includes found", std::vector<std::string>{param}, true);
         return true;
     }
-    void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target)
     {
         std::vector<std::string> buffer;
         if (!get_keywords(target, buffer, lines) || (!buffer.empty() && buffer[0] == "false"))
@@ -268,7 +217,7 @@ namespace Program
         }
         Utils::Console::debug("headers found", params, true);
     }
-    void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target)
     {
         std::vector<std::string> key_buffer;
         if (!get_keywords(target, key_buffer, lines) || key_buffer[0] == "false")
@@ -279,10 +228,6 @@ namespace Program
         if (key_buffer[1].empty())
         {
             key_buffer[1] = "Table of contents";
-        }
-        if (key_buffer[2].empty())
-        {
-            key_buffer[2] = "0";
         }
 
         std::vector<std::pair<std::string, uint16_t>> chapters;
@@ -305,7 +250,7 @@ namespace Program
         for (std::size_t i = 0; i < chapters.size(); ++i)
         {
             std::vector<std::string> words = Utils::Misc::divide(chapters[i].first, ' ');
-            std::string entry = std::string("- ").append(words[0].substr(0, words[0].size()-1)).append(" [");
+            std::string entry = std::string("- ").append(words[0].substr(0, words[0].size() - 1)).append(" [");
 
             for (auto it = words.begin() + 1; it != words.end(); ++it)
             {
@@ -320,7 +265,75 @@ namespace Program
             }
             toc.emplace_back(entry);
         }
+        insert_at_target(target, toc, lines);
+    }
+    /* static */ bool Convert::get_lines(const std::string& path, const std::string& flag,
+                                         std::vector<std::string>& buffer, uint16_t& nFiles)
+    {
+        std::string local_path = path.substr(0, path.find_last_of('/') + 1);
+        std::vector<std::string> source_lines;
 
-        lines.insert(lines.begin() + std::stoi(key_buffer[2]), toc.begin(), toc.end());
+        if (!Utils::FileIO::readFile(path, source_lines, false))
+        {
+            Utils::Console::error("could not read file", path);
+            return false;
+        }
+        for (const std::string& line : source_lines)
+        {
+            if (line.find(flag) == std::string::npos)
+            {
+                buffer.emplace_back(line);
+            }
+            else
+            {
+                std::string include_path = local_path + Utils::Misc::divide(line, ' ')[1];
+                if (!get_lines(include_path, flag, buffer, nFiles))
+                {
+                    return false;
+                }
+                ++nFiles;
+            }
+        }
+        return true;
+    }
+    /* static */ bool Convert::get_keywords(const std::string& target, std::vector<std::string>& keywords,
+                                            std::vector<std::string>& lines)
+    {
+        for (std::size_t i = 0; i < lines.size(); ++i)
+        {
+            if (lines[i].find(target) != std::string::npos)
+            {
+                uint64_t param_start = lines[i].find('=') + 1;
+                uint64_t param_end = lines[i].find(';');
+                std::string params = lines[i].substr(param_start, param_end - param_start);
+
+                std::vector<std::string> words = Utils::Misc::divide(params, ',');
+                keywords.insert(keywords.end(), words.begin(), words.end());
+
+                lines.erase(lines.begin() + static_cast<int64_t>(i));
+                return true;
+            }
+        }
+        // target not found
+        Utils::Console::warning("keyword flag not found", target);
+        return false;
+    }
+    /* static */ bool Convert::insert_at_target(const std::string& target, const std::vector<std::string>& buffer,
+                                                std::vector<std::string>& lines)
+    {
+        std::string insert_target = target.substr(0, 1).append("insert_").append(target.substr(1, target.length() - 1));
+
+        for (std::size_t i = 0; i < lines.size(); ++i)
+        {
+            if (lines[i].find(insert_target) != std::string::npos)
+            {
+                lines.erase(lines.begin() + static_cast<long>(i));
+                lines.insert(lines.begin() + static_cast<long>(i), buffer.begin(), buffer.end());
+                return true;
+            }
+        }
+        // target not found
+        Utils::Console::warning("target insert flag not found", insert_target);
+        return false;
     }
 }// namespace Program

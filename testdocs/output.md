@@ -1,6 +1,5 @@
 
-
-# table of content
+# Table of content
 
 - 1 [Sample document](#chapter0)
 	- 1.1 [Sub document](#chapter1)
@@ -8,7 +7,7 @@
 - 2 [Sample document](#chapter3)
 	- 2.1 [Sub document](#chapter4)
 		- 2.1.1 [Sub sub document](#chapter5)
-- 3 [test](#chapter6)
+- 3 [Literature](#chapter6)
 
 # 1. Sample document <a name="chapter0"></a>
 
@@ -19,7 +18,6 @@ This is a sample document.
 | <img width="200" src="https://previews.123rf.com/images/aquir/aquir1311/aquir131100316/23569861-sample-grunge-red-round-stamp.jpg"  alt="sample image"/> |
 | Image 1 - sample image| 
 
-from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html
 
 ## 1.1. Sub document <a name="chapter1"></a>
 
@@ -48,7 +46,6 @@ This is a sample document.
 | <img width="200" src="https://previews.123rf.com/images/aquir/aquir1311/aquir131100316/23569861-sample-grunge-red-round-stamp.jpg"  alt="sample image"/> |
 | Image 3 - sample image| 
 
-from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html
 
 ## 2.1. Sub document <a name="chapter4"></a>
 
@@ -68,10 +65,11 @@ Sub sub document, it sadly has no image of a bird, it does however contain a dia
 | Diagram 2 - diagram |
 
 
-# 3. test <a name="chapter6"></a>
+# 3. Literature <a name="chapter6"></a>
 
 |Index|Source|
 |:---:|:---|
-| 1 | 123RF. (n.d.). Stock Photo. Retrieved October 4, 2021, | 
+| 1 | 123RF. (n.d.). Stock Photo. Retrieved October 4, 2021, from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html | 
 | 2 | K. (n.d.). Sample Image Results. Remove.Bg. Retrieved October 4, 2021, from https://www.remove.bg/sample_images | 
 | 3 | Astah. (2020, November 16). Class diagrams. https://astah.net/support/astah-pro/user-guide/class-diagrams/ | 
+
