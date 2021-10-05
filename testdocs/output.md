@@ -1,4 +1,3 @@
-
 # Table of content
 
 - 1 [Sample document](#chapter0)
@@ -21,7 +20,7 @@ This is a sample document.
 
 ## 1.1. Sub document <a name="chapter1"></a>
 
-This is a sub document. It has a picture of a bird.
+This is a sub document. It has a picture of a bird. 
 
 | <img width="200" src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"  alt="bird"/> |
 |:---:|
@@ -49,7 +48,7 @@ This is a sample document.
 
 ## 2.1. Sub document <a name="chapter4"></a>
 
-This is a sub document. It has a picture of a bird.
+This is a sub document. It has a picture of a bird. 
 
 | <img width="200" src="https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"  alt="bird"/> |
 |:---:|
@@ -69,7 +68,7 @@ Sub sub document, it sadly has no image of a bird, it does however contain a dia
 
 |Index|Source|
 |:---:|:---|
-| 1 | 123RF. (n.d.). Stock Photo. Retrieved October 4, 2021, from https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html | 
-| 2 | K. (n.d.). Sample Image Results. Remove.Bg. Retrieved October 4, 2021, from https://www.remove.bg/sample_images | 
-| 3 | Astah. (2020, November 16). Class diagrams. https://astah.net/support/astah-pro/user-guide/class-diagrams/ | 
+| 1 | https://www.123rf.com/photo_23569861_sample-grunge-red-round-stamp.html | 
+| 2 | https://www.remove.bg/sample_images | 
+| 3 | https://astah.net/support/astah-pro/user-guide/class-diagrams/ | 
 

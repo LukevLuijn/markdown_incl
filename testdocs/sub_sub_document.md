@@ -6,4 +6,4 @@ Sub sub document, it sadly has no image of a bird, it does however contain a dia
 |:---|
 | !diagram - diagram |
 
-!url Astah. (2020, November 16). Class diagrams. https://astah.net/support/astah-pro/user-guide/class-diagrams/
+!url https://astah.net/support/astah-pro/user-guide/class-diagrams/
