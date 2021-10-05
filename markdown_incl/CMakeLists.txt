@@ -20,7 +20,9 @@ add_subdirectory(../lib/lib_utils lib_utils)
 include_directories(../lib/lib_utils/include/lib_utils)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND /bin/bash ~/scripts/log.sh -i -m 'build complete')
+
+# placeholder, @see https://github.com/LukevLuijn/scripts
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND /bin/bash ~/scripts/log.sh -i -m 'build complete')
 
 target_compile_options(${PROJECT_NAME} PUBLIC ${UTILS_CXX_FLAGS})
 target_link_libraries(${PROJECT_NAME} lib_utils ${CMAKE_THREAD_LIBS_INIT})
