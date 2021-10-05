@@ -13,8 +13,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 include_directories(include/${PROJECT_NAME})
 include_directories(src/)
 
-set(HEADERS include/${PROJECT_NAME}/Setup.h include/${PROJECT_NAME}/Convert.h)
-set(SOURCES src/main.cpp src/Setup.cpp src/Convert.cpp)
+set(HEADERS
+        include/${PROJECT_NAME}/Setup.h
+        include/${PROJECT_NAME}/Convert.h)
+set(SOURCES
+        src/main.cpp
+        src/Setup.cpp
+        src/Convert.cpp)
 
 add_subdirectory(../lib/lib_utils lib_utils)
 include_directories(../lib/lib_utils/include/lib_utils)

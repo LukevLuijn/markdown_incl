@@ -12,21 +12,35 @@
 
 namespace Program
 {
-    /* static */ std::vector<std::string> Convert::chapter_icon = {"# ", "## ", "### ", "#### "};
+    /* static */ const std::vector<std::string> Convert::CHAPTERS = {"# ", "## ", "### ", "#### ", "##### "};
+    /* static */ const std::map<Targets_e, std::string> Convert::TARGETS = {
+            {Targets_e::ASSET, "!asset"},
+            {Targets_e::IGNORE, "!ignore"},
+            {Targets_e::URL_BASE, "!url"},
+            {Targets_e::URL_TITLE, "!title_url"},
+            {Targets_e::PAGE_BREAK, "!page_break"},
+            {Targets_e::TOC_ENABLE, "!enable_toc"},
+            {Targets_e::TOC_TITLE, "!title_toc"},
+            {Targets_e::TOC_DEPTH, "!depth_toc"},
+            {Targets_e::CHAP_NUMBERS, "!chap_num"},
+            {Targets_e::DOC_INSERT, "!sub"},
+            {Targets_e::TOC_INSERT, "!insert_toc"},
+            {Targets_e::URL_INSERT, "!insert_url"},
+    };
 
     /* static */ bool Convert::convert_document(const std::string& src, const std::string& out)
     {
         std::vector<std::string> lines;
 
-        if (!manage_include(lines, "!sub", src))
+        if (!handle_include(lines, src))
         {
             return false;
         }
-        manage_ignores(lines, "!ignore");
-        manage_urls(lines, "!url");
-        manage_assets(lines, "!assets");
-        manage_page_break(lines, "!page_break");
-        manage_chapters(lines, "!numbers", "!toc");
+        handle_ignores(lines);
+        handle_urls(lines);
+        handle_assets(lines);
+        handle_page_break(lines);
+        handle_chapters(lines);
 
 
         if (!Utils::FileIO::writeToFile(out, lines, false, false))
@@ -37,34 +51,27 @@ namespace Program
 
         return true;
     }
-    /* static */ void Convert::manage_page_break(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::handle_page_break(std::vector<std::string>& lines)
     {
         std::vector<std::string> buffer;
-        if (!get_keywords(target, buffer, lines) || buffer[0] == "false")
-        {
-            // no keys found, nothing to do here.
+        if (!get_keywords(Targets_e::PAGE_BREAK, buffer, lines) || buffer[0] == "false")
             return;
-        }
 
         std::string page_break = "\n<div style=\"page-break-after: always;\"></div>\n";
         for (std::size_t i = 0; i < lines.size(); ++i)
         {
-            if (lines[i].substr(0, chapter_icon[0].size()) == chapter_icon[0])
+            if (lines[i].substr(0, CHAPTERS[0].size()) == CHAPTERS[0])
             {
                 lines.insert(lines.begin() + static_cast<int64_t>(i), page_break);
                 ++i;
             }
         }
     }
-
-    /* static */ void Convert::manage_ignores(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::handle_ignores(std::vector<std::string>& lines)
     {
         std::vector<std::string> buffer;
-        if (!get_keywords(target, buffer, lines))
-        {
-            // no keys found, nothing to do here.
+        if (!get_keywords(Targets_e::IGNORE, buffer, lines))
             return;
-        }
 
         for (auto it = lines.begin(); it != lines.end();)
         {
@@ -81,14 +88,12 @@ namespace Program
             ++it;
         }
     }
-    /* static */ void Convert::manage_assets(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::handle_assets(std::vector<std::string>& lines)
     {
         std::vector<std::string> buffer;
-        if (!get_keywords(target, buffer, lines))
-        {
-            // no keys found, nothing to do here.
+        if (!get_keywords(Targets_e::ASSET, buffer, lines))
             return;
-        }
+
         std::map<std::string, uint16_t> keywords;
         for (const std::string& key : buffer)
         {
@@ -121,10 +126,10 @@ namespace Program
         }
         Utils::Console::debug("assets found", stats, true);
     }
-    /* static */ void Convert::manage_urls(std::vector<std::string>& lines, const std::string& target)
+    /* static */ void Convert::handle_urls(std::vector<std::string>& lines)
     {
         std::vector<std::string> buffer;
-        if (!get_keywords(target + "_title", buffer, lines))
+        if (!get_keywords(Targets_e::URL_TITLE, buffer, lines))
         {
             buffer[0] = "Bibliography";
         }
@@ -134,9 +139,10 @@ namespace Program
         uint16_t duplicates = 0;
         for (auto it = lines.begin(); it != lines.end();)
         {
-            if (it->find(target) != std::string::npos)
+            if (it->find(TARGETS.at(Targets_e::URL_BASE)) != std::string::npos)
             {
-                std::string entry = it->substr(target.length() + 1, it->length() - target.length() + 1);
+                std::string entry = it->substr(TARGETS.at(Targets_e::URL_BASE).length() + 1,
+                                               it->length() - TARGETS.at(Targets_e::URL_BASE).length() + 1);
                 if (std::find(urls.begin(), urls.end(), entry) == urls.end())
                 {
                     urls.emplace_back(entry);
@@ -161,15 +167,15 @@ namespace Program
         if (!urls.empty())
         {
             std::vector<std::string> params = {
-                    std::string("x").append(std::to_string(urls.size()).append("\t").append(target)),
+                    std::string("x").append(
+                            std::to_string(urls.size()).append("\t").append(TARGETS.at(Targets_e::URL_BASE))),
                     std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
             Utils::Console::debug("urls found", params, true);
 
-            insert_at_target(target, urls, lines);
+            insert_at_target(Targets_e::URL_INSERT, urls, lines);
         }
     }
-    /* static */ bool Convert::manage_include(std::vector<std::string>& buffer, const std::string& target,
-                                              const std::string& source)
+    /* static */ bool Convert::handle_include(std::vector<std::string>& buffer, const std::string& source)
     {
         std::vector<std::string> source_lines;
         if (!Utils::FileIO::readFile(source, source_lines, false))
@@ -178,21 +184,21 @@ namespace Program
             return false;
         }
         uint16_t nFiles = 0;
-        if (!get_lines(source, target, buffer, nFiles))
+        if (!get_lines(source, TARGETS.at(Targets_e::DOC_INSERT), buffer, nFiles))
         {
             return false;
         }
-        std::string param = std::string("x").append(std::to_string(nFiles)).append("\t").append(target);
+        std::string param =
+                std::string("x").append(std::to_string(nFiles)).append("\t").append(TARGETS.at(Targets_e::DOC_INSERT));
         Utils::Console::debug("includes found", std::vector<std::string>{param}, true);
         return true;
     }
-    /* static */ void Convert::manage_chapters(std::vector<std::string>& lines, const std::string& target,
-                                               const std::string& toc_target)
+    /* static */ void Convert::handle_chapters(std::vector<std::string>& lines)
     {
         std::vector<std::string> buffer;
-        if (!get_keywords(target, buffer, lines) || (!buffer.empty() && buffer[0] == "false"))
+        if (!get_keywords(Targets_e::CHAP_NUMBERS, buffer, lines) || (!buffer.empty() && buffer[0] == "false"))
         {
-            manage_toc(lines, toc_target, false);
+            handle_toc(lines, false);
             // no keys found, nothing to do here.
             return;
         }
@@ -217,11 +223,11 @@ namespace Program
         std::vector<uint16_t> counters(4, 0);
         for (std::string& line : lines)
         {
-            for (std::size_t i = 0; i < chapter_icon.size(); ++i)
+            for (std::size_t i = 0; i < CHAPTERS.size(); ++i)
             {
-                if (line.substr(0, chapter_icon[i].size()) == chapter_icon[i])
+                if (line.substr(0, CHAPTERS[i].size()) == CHAPTERS[i])
                 {
-                    line.insert(chapter_icon[i].size(), get_number(indices, static_cast<uint16_t>(i + 1)));
+                    line.insert(CHAPTERS[i].size(), get_number(indices, static_cast<uint16_t>(i + 1)));
                     ++counters[i];
                 }
             }
@@ -240,31 +246,34 @@ namespace Program
         }
         Utils::Console::debug("headers found", params, true);
 
-        manage_toc(lines, toc_target, true);
+        handle_toc(lines, true);
     }
-    /* static */ void Convert::manage_toc(std::vector<std::string>& lines, const std::string& target,
-                                          bool has_chapter_numbers)
+    /* static */ void Convert::handle_toc(std::vector<std::string>& lines, bool has_chapter_numbers)
     {
         std::vector<std::string> key_buffer;
-        if (!get_keywords(target, key_buffer, lines) || key_buffer[0] == "false")
-        {
-            // no keys found, nothing to do here.
+        if (!get_keywords(Targets_e::TOC_ENABLE, key_buffer, lines) || key_buffer[0] == "false")
             return;
-        }
-        if (key_buffer[1].empty())
-        {
-            key_buffer[1] = "Table of contents";
-        }
+
+        std::string chapter = "Table of Contents";
+        key_buffer.clear();
+        if (get_keywords(Targets_e::TOC_TITLE, key_buffer, lines))
+            chapter = key_buffer[0];
+
+        auto depth = static_cast<uint16_t>(CHAPTERS.size());
+        key_buffer.clear();
+        if (get_keywords(Targets_e::TOC_DEPTH, key_buffer, lines))
+            depth = static_cast<unsigned short>(std::stoi(key_buffer[0]));
+
 
         std::vector<std::pair<std::string, uint16_t>> chapters;
         uint16_t counter = 0;
         for (auto& line : lines)
         {
-            for (std::size_t i = 0; i < chapter_icon.size(); ++i)
+            for (std::size_t i = 0; i < CHAPTERS.size(); ++i)
             {
-                if (line.substr(0, chapter_icon[i].size()) == chapter_icon[i])
+                if (line.substr(0, CHAPTERS[i].size()) == CHAPTERS[i])
                 {
-                    std::string title = line.substr(chapter_icon[i].size(), line.size() - chapter_icon[i].size());
+                    std::string title = line.substr(CHAPTERS[i].size(), line.size() - CHAPTERS[i].size());
                     chapters.emplace_back(std::make_pair(title, i));
                     line.append(" <a name=\"chapter" + std::to_string(counter) + "\"></a>");
                     ++counter;
@@ -272,9 +281,12 @@ namespace Program
             }
         }
 
-        std::vector<std::string> toc = {std::string("# ").append(key_buffer[1]).append("\n")};
+        std::vector<std::string> toc = {std::string("# ").append(chapter).append("\n")};
+
         for (std::size_t i = 0; i < chapters.size(); ++i)
         {
+            if (chapters[i].second > depth-1) continue;
+
             std::vector<std::string> words = Utils::Misc::divide(chapters[i].first, ' ');
             std::string entry = std::string("- ")
                                         .append((has_chapter_numbers) ? words[0].substr(0, words[0].size() - 1) : "")
@@ -293,8 +305,9 @@ namespace Program
             }
             toc.emplace_back(entry);
         }
-        insert_at_target(target, toc, lines);
+        insert_at_target(Targets_e::TOC_INSERT, toc, lines);
     }
+
     /* static */ bool Convert::get_lines(const std::string& path, const std::string& flag,
                                          std::vector<std::string>& buffer, uint16_t& nFiles)
     {
@@ -324,12 +337,12 @@ namespace Program
         }
         return true;
     }
-    /* static */ bool Convert::get_keywords(const std::string& target, std::vector<std::string>& keywords,
+    /* static */ bool Convert::get_keywords(const Targets_e& target, std::vector<std::string>& keywords,
                                             std::vector<std::string>& lines)
     {
         for (std::size_t i = 0; i < lines.size(); ++i)
         {
-            if (lines[i].find(target) != std::string::npos)
+            if (lines[i].find(TARGETS.at(target)) != std::string::npos)
             {
                 uint64_t param_start = lines[i].find('=') + 1;
                 uint64_t param_end = lines[i].find(';');
@@ -343,17 +356,17 @@ namespace Program
             }
         }
         // target not found
-        Utils::Console::warning("keyword flag not found", target);
+        Utils::Console::warning("keyword flag not found", TARGETS.at(target));
         return false;
     }
-    /* static */ bool Convert::insert_at_target(const std::string& target, const std::vector<std::string>& buffer,
+    /* static */ bool Convert::insert_at_target(const Targets_e& target, const std::vector<std::string>& buffer,
                                                 std::vector<std::string>& lines)
     {
-        std::string insert_target = target.substr(0, 1).append("insert_").append(target.substr(1, target.length() - 1));
+        //        std::string insert_target = target.substr(0, 1).append("insert_").append(target.substr(1, target.length() - 1));
 
         for (std::size_t i = 0; i < lines.size(); ++i)
         {
-            if (lines[i].find(insert_target) != std::string::npos)
+            if (lines[i].find(TARGETS.at(target)) != std::string::npos)
             {
                 lines.erase(lines.begin() + static_cast<long>(i));
                 lines.insert(lines.begin() + static_cast<long>(i), buffer.begin(), buffer.end());
@@ -361,7 +374,7 @@ namespace Program
             }
         }
         // target not found
-        Utils::Console::warning("target insert flag not found", insert_target);
+        Utils::Console::warning("target insert flag not found", TARGETS.at(target));
         return false;
     }
 }// namespace Program
