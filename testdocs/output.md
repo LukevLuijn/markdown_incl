@@ -5,6 +5,9 @@
 		- 1.1.1 [Sub sub document](#chapter2)
 - 2 [Literature](#chapter3)
 
+
+<div style="page-break-after: always;"></div>
+
 # 1. Sample document <a name="chapter0"></a>
 
 This is a sample document.
@@ -33,6 +36,9 @@ Sub sub document, it sadly has no image of a bird, it does however contain a dia
 |:---|
 | Diagram 1 - diagram |
 
+
+
+<div style="page-break-after: always;"></div>
 
 # 2. Literature <a name="chapter3"></a>
 

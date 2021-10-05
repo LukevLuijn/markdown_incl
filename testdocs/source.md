@@ -24,3 +24,4 @@ This is a sample document.
 !numbers=true;              // chapter numbering, true/false
 !toc=true,Table of content; // TOC true/false, title for chapter.
 !url_title=Literature;      // title of the url chapter.
+!page_break=true;           // break page after every header 1.

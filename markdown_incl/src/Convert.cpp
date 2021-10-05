@@ -25,7 +25,9 @@ namespace Program
         manage_ignores(lines, "!ignore");
         manage_urls(lines, "!url");
         manage_assets(lines, "!assets");
+        manage_page_break(lines, "!page_break");
         manage_chapters(lines, "!numbers", "!toc");
+
 
         if (!Utils::FileIO::writeToFile(out, lines, false, false))
         {
@@ -35,6 +37,26 @@ namespace Program
 
         return true;
     }
+    /* static */ void Convert::manage_page_break(std::vector<std::string>& lines, const std::string& target)
+    {
+        std::vector<std::string> buffer;
+        if (!get_keywords(target, buffer, lines) || buffer[0] == "false")
+        {
+            // no keys found, nothing to do here.
+            return;
+        }
+
+        std::string page_break = "\n<div style=\"page-break-after: always;\"></div>\n";
+        for (std::size_t i = 0; i < lines.size(); ++i)
+        {
+            if (lines[i].substr(0, chapter_icon[0].size()) == chapter_icon[0])
+            {
+                lines.insert(lines.begin() + static_cast<int64_t>(i), page_break);
+                ++i;
+            }
+        }
+    }
+
     /* static */ void Convert::manage_ignores(std::vector<std::string>& lines, const std::string& target)
     {
         std::vector<std::string> buffer;

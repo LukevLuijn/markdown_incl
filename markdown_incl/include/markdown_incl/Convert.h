@@ -24,6 +24,15 @@ namespace Program
 
     private:
         /**
+         * @brief Inserts page breaks after every header 1
+         *
+         * @if !page_break flag is set to true.
+         *
+         * @param lines Lines of document.
+         * @param target Target for config.
+         */
+        static void manage_page_break(std::vector<std::string>& lines, const std::string& target);
+        /**
          * @brief Creates table of contents by searching for headers. Inserts toc at specified location [!insert_toc].
          *
          * @if !toc flag is set to true.
