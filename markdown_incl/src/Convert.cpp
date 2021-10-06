@@ -18,7 +18,7 @@ namespace Program
             {Targets_e::IGNORE, "!ignore"},
             {Targets_e::URL_BASE, "!url"},
             {Targets_e::URL_TITLE, "!title_url"},
-            {Targets_e::PAGE_BREAK, "!page_break"},
+            {Targets_e::PAGE_BREAK, "!break_page"},
             {Targets_e::TOC_ENABLE, "!enable_toc"},
             {Targets_e::TOC_TITLE, "!title_toc"},
             {Targets_e::TOC_DEPTH, "!depth_toc"},
@@ -26,9 +26,9 @@ namespace Program
             {Targets_e::DOC_INSERT, "!sub"},
             {Targets_e::TOC_INSERT, "!insert_toc"},
             {Targets_e::URL_INSERT, "!insert_url"},
-            {Targets_e::TABLE_FORMAT, "!table_format"},
-            {Targets_e::TABLE_START, "!table_start"},
-            {Targets_e::TABLE_END, "!table_end"},
+            {Targets_e::TABLE_FORMAT, "!format_table"},
+            {Targets_e::TABLE_START, "!start_table"},
+            {Targets_e::TABLE_END, "!end_table"},
     };
 
     /* static */ bool Convert::convert_document(const std::string& src, const std::string& out)
@@ -47,8 +47,8 @@ namespace Program
             handle_urls(lines);      // handle !url flags in file.
             handle_page_break(lines);// insert page breaks after every header 1.
             handle_chapters(lines);  // insert page numbers for every chapter, also creates toc.
-            handle_tables(lines);    // formats tables. (before assets because of possible !table asset)
             handle_assets(lines);    // handle all assets in file.
+            handle_tables(lines);    // formats tables. (before assets because of possible !table asset)
 
             /*
              * writes all converted lines to output file.
@@ -210,23 +210,31 @@ namespace Program
             ++it;
         }
 
+        if (urls.empty())
+        {
+            // no urls found, exiting..
+            return;
+        }
+
         for (std::size_t i = 0; i < urls.size(); ++i)
         {
-            urls[i] = std::string("| ").append(std::to_string(i + 1)).append(" | ").append(urls[i]).append(" | ");
+            urls[i] = std::string("|").append(std::to_string(i + 1)).append("|").append(urls[i]).append("|");
         }
-        std::vector<std::string> header = {"# " + buffer[0], "\n|Index|Source|", "|:---:|:---|"};
+        std::vector<std::string> header = {"# " + buffer[0],
+                                           TARGETS.at(Targets_e::TABLE_START),"",
+                                           "|Index|Source|",
+                                           "|:---:|:---|"};
         urls.insert(urls.begin(), header.begin(), header.end());
+        urls.emplace_back("");
+        urls.emplace_back(TARGETS.at(Targets_e::TABLE_END));
 
-        if (!urls.empty())
-        {
-            std::vector<std::string> params = {
-                    std::string("x").append(
-                            std::to_string(urls.size()).append("\t").append(TARGETS.at(Targets_e::URL_BASE))),
-                    std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
-            Utils::Console::debug("urls found", params, true);
+        std::vector<std::string> params = {
+                std::string("x").append(
+                        std::to_string(urls.size()).append("\t").append(TARGETS.at(Targets_e::URL_BASE))),
+                std::string("x").append(std::to_string(duplicates)).append("\t").append("filtered")};
+        Utils::Console::debug("urls found", params, true);
 
-            insert_at_target(Targets_e::URL_INSERT, urls, lines);
-        }
+        insert_at_target(Targets_e::URL_INSERT, urls, lines);
     }
     /* static */ bool Convert::handle_include(std::vector<std::string>& buffer, const std::string& source)
     {
@@ -416,8 +424,6 @@ namespace Program
     /* static */ bool Convert::insert_at_target(const Targets_e& target, const std::vector<std::string>& buffer,
                                                 std::vector<std::string>& lines)
     {
-        //        std::string insert_target = target.substr(0, 1).append("insert_").append(target.substr(1, target.length() - 1));
-
         for (std::size_t i = 0; i < lines.size(); ++i)
         {
             if (lines[i].find(TARGETS.at(target)) != std::string::npos)
@@ -435,13 +441,18 @@ namespace Program
                                             const std::size_t& end)
     {
         std::vector<std::string> table_lines(lines.begin() + static_cast<int64_t>(start),
-                                             lines.begin() + static_cast<int64_t>(end));
+                                             lines.begin() + static_cast<int64_t>(end+1));
 
-        uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|') - 1);
+
+        uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|')-1);
+
+        std::cout << lines[start] << std::endl;
+        std::cout << "cols: " << n_cols<< std::endl;
+
         std::vector<uint16_t> col_lengths(n_cols, 0);
         for (const std::string& line : table_lines)
         {
-            std::vector<std::string> cols = Utils::Misc::divide(line.substr(1, line.length() - 2), '|');
+            std::vector<std::string> cols = Utils::Misc::divide(line.substr(1, line.length() - 1), '|');
             for (std::size_t i = 0; i < cols.size(); ++i)
             {
                 if (cols[i].length() > col_lengths[i])
@@ -450,6 +461,10 @@ namespace Program
                 }
             }
         }
+
+        for (uint16_t col : col_lengths)
+            std::cout << col << " ";
+        std::cout << std::endl;
 
         for (std::size_t line_index = start; line_index <= end; ++line_index)
         {
