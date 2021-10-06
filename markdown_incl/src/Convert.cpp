@@ -443,11 +443,7 @@ namespace Program
         std::vector<std::string> table_lines(lines.begin() + static_cast<int64_t>(start),
                                              lines.begin() + static_cast<int64_t>(end+1));
 
-
         uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|')-1);
-
-        std::cout << lines[start] << std::endl;
-        std::cout << "cols: " << n_cols<< std::endl;
 
         std::vector<uint16_t> col_lengths(n_cols, 0);
         for (const std::string& line : table_lines)
@@ -461,11 +457,6 @@ namespace Program
                 }
             }
         }
-
-        for (uint16_t col : col_lengths)
-            std::cout << col << " ";
-        std::cout << std::endl;
-
         for (std::size_t line_index = start; line_index <= end; ++line_index)
         {
             std::vector<std::string> cols =
