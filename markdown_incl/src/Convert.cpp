@@ -101,7 +101,7 @@ namespace Program
             ++start;
         }
 
-        std::vector<std::string> param = {std::to_string(tables_formatted).append("x\t").append("tables")};
+        std::vector<std::string> param = {std::string("x").append(std::to_string(tables_formatted)).append("\ttables")};
         Utils::Console::debug("tables found", param, true);
     }
     /* static */ void Convert::handle_page_break(std::vector<std::string>& lines)
