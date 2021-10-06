@@ -45,10 +45,10 @@ namespace Program
         {
             handle_ignores(lines);   // handle !ignore flags in file.
             handle_urls(lines);      // handle !url flags in file.
-            handle_assets(lines);    // handle all assets in file.
             handle_page_break(lines);// insert page breaks after every header 1.
             handle_chapters(lines);  // insert page numbers for every chapter, also creates toc.
-            handle_tables(lines);    // formats tables.
+            handle_tables(lines);    // formats tables. (before assets because of possible !table asset)
+            handle_assets(lines);    // handle all assets in file.
 
             /*
              * writes all converted lines to output file.
@@ -81,16 +81,16 @@ namespace Program
         {
             if (lines[start].find(TARGETS.at(Targets_e::TABLE_START)) != std::string::npos)
             {
-                start_index = start + 1;
+                start_index = start + 2;
                 for (std::size_t end = start; end < lines.size(); ++end)
                 {
                     if (lines[end].find(TARGETS.at(Targets_e::TABLE_END)) != std::string::npos)
                     {
-                        end_index = end - 1;
+                        end_index = end - 2;
                         format_table(lines, start_index, end_index);
 
-                        lines.erase(lines.begin() + static_cast<long>(start_index - 1));
-                        lines.erase(lines.begin() + static_cast<long>(end_index));
+                        lines.erase(lines.begin() + static_cast<long>(start));
+                        lines.erase(lines.begin() + static_cast<long>(end - 1));
 
                         start = end;
                         ++tables_formatted;
@@ -101,8 +101,7 @@ namespace Program
             ++start;
         }
 
-        std::vector<std::string> param = {
-                std::to_string(tables_formatted).append("x\t").append("tables")};
+        std::vector<std::string> param = {std::to_string(tables_formatted).append("x\t").append("tables")};
         Utils::Console::debug("tables found", param, true);
     }
     /* static */ void Convert::handle_page_break(std::vector<std::string>& lines)
@@ -438,7 +437,7 @@ namespace Program
         std::vector<std::string> table_lines(lines.begin() + static_cast<int64_t>(start),
                                              lines.begin() + static_cast<int64_t>(end));
 
-        uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|')-1);
+        uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|') - 1);
         std::vector<uint16_t> col_lengths(n_cols, 0);
         for (const std::string& line : table_lines)
         {

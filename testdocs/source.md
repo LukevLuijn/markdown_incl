@@ -17,12 +17,14 @@ This is a sample document.
 # table test 
 
 !table_start
+
 |#|name|desc|
 |:---|:---|:---|
 |number 1 row|table format|this is a test for table formatting.|
 |number 2 row|table format|this table should be formatted in raw document.|
 |number 3 row|table format|if table is not formatted you should check the table_start and table_end flags|
 |number 4 row|table format|else you should check if you set the table_format flag to true!|
+
 !table_end
 
 # header 1
