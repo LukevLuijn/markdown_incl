@@ -14,14 +14,21 @@ This is a sample document.
 
 !sub sub_document.md        // include content of other documents.
 
+# table test 
+
+!table_start
+|#|name|desc|
+|:---|:---|:---|
+|number 1 row|table format|this is a test for table formatting.|
+|number 2 row|table format|this table should be formatted in raw document.|
+|number 3 row|table format|if table is not formatted you should check the table_start and table_end flags|
+|number 4 row|table format|else you should check if you set the table_format flag to true!|
+!table_end
+
 # header 1
-
 ## header 2
-
 ### header 3
-
 #### header 4
-
 ##### header 5
 
 !insert_url // place urls here
@@ -38,3 +45,4 @@ This is a sample document.
 
 !title_url=Literature;  // title of the url chapter.
 !page_break=true;       // break page after every header 1.
+!table_format=true;     // format tables with the table_start/table_end flag

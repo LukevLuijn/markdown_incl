@@ -26,30 +26,84 @@ namespace Program
             {Targets_e::DOC_INSERT, "!sub"},
             {Targets_e::TOC_INSERT, "!insert_toc"},
             {Targets_e::URL_INSERT, "!insert_url"},
+            {Targets_e::TABLE_FORMAT, "!table_format"},
+            {Targets_e::TABLE_START, "!table_start"},
+            {Targets_e::TABLE_END, "!table_end"},
     };
 
     /* static */ bool Convert::convert_document(const std::string& src, const std::string& out)
     {
+        // buffer for lines read from file.
         std::vector<std::string> lines;
 
-        if (!handle_include(lines, src))
+        /*
+         * reads in all lines including all includes,
+         * if this method returns false there was a read
+         * error and the program terminates.
+         */
+        if (handle_include(lines, src))
         {
-            return false;
+            handle_ignores(lines);   // handle !ignore flags in file.
+            handle_urls(lines);      // handle !url flags in file.
+            handle_assets(lines);    // handle all assets in file.
+            handle_page_break(lines);// insert page breaks after every header 1.
+            handle_chapters(lines);  // insert page numbers for every chapter, also creates toc.
+            handle_tables(lines);    // formats tables.
+
+            /*
+             * writes all converted lines to output file.
+             * if this method returns false there was a
+             * read error and the program terminates.
+             */
+            if (!Utils::FileIO::writeToFile(out, lines, false, false))
+            {
+                Utils::Console::error("could not write to file", out);
+                return false;
+            }
+            // read, conversion and write successful.
+            return true;
         }
-        handle_ignores(lines);
-        handle_urls(lines);
-        handle_assets(lines);
-        handle_page_break(lines);
-        handle_chapters(lines);
+        Utils::Console::error("could not read from file", src);
+        return false;
+    }
 
+    // main methods
 
-        if (!Utils::FileIO::writeToFile(out, lines, false, false))
+    /* static */ void Convert::handle_tables(std::vector<std::string>& lines)
+    {
+        std::vector<std::string> key_buffer;
+        if (!get_keywords(Targets_e::TABLE_FORMAT, key_buffer, lines) || key_buffer[0] == "false")
+            return;
+
+        uint16_t tables_formatted = 0;
+        std::size_t start_index = 0, end_index = 0;
+        for (std::size_t start = 0; start < lines.size();)
         {
-            Utils::Console::error("could not write to file", out);
-            return false;
+            if (lines[start].find(TARGETS.at(Targets_e::TABLE_START)) != std::string::npos)
+            {
+                start_index = start + 1;
+                for (std::size_t end = start; end < lines.size(); ++end)
+                {
+                    if (lines[end].find(TARGETS.at(Targets_e::TABLE_END)) != std::string::npos)
+                    {
+                        end_index = end - 1;
+                        format_table(lines, start_index, end_index);
+
+                        lines.erase(lines.begin() + static_cast<long>(start_index - 1));
+                        lines.erase(lines.begin() + static_cast<long>(end_index));
+
+                        start = end;
+                        ++tables_formatted;
+                        break;
+                    }
+                }
+            }
+            ++start;
         }
 
-        return true;
+        std::vector<std::string> param = {
+                std::to_string(tables_formatted).append("x\t").append("tables")};
+        Utils::Console::debug("tables found", param, true);
     }
     /* static */ void Convert::handle_page_break(std::vector<std::string>& lines)
     {
@@ -180,7 +234,6 @@ namespace Program
         std::vector<std::string> source_lines;
         if (!Utils::FileIO::readFile(source, source_lines, false))
         {
-            Utils::Console::error("could not read file", source);
             return false;
         }
         uint16_t nFiles = 0;
@@ -285,7 +338,8 @@ namespace Program
 
         for (std::size_t i = 0; i < chapters.size(); ++i)
         {
-            if (chapters[i].second > depth-1) continue;
+            if (chapters[i].second > depth - 1)
+                continue;
 
             std::vector<std::string> words = Utils::Misc::divide(chapters[i].first, ' ');
             std::string entry = std::string("- ")
@@ -308,6 +362,8 @@ namespace Program
         insert_at_target(Targets_e::TOC_INSERT, toc, lines);
     }
 
+    // Utility functions
+
     /* static */ bool Convert::get_lines(const std::string& path, const std::string& flag,
                                          std::vector<std::string>& buffer, uint16_t& nFiles)
     {
@@ -316,7 +372,6 @@ namespace Program
 
         if (!Utils::FileIO::readFile(path, source_lines, false))
         {
-            Utils::Console::error("could not read file", path);
             return false;
         }
         for (const std::string& line : source_lines)
@@ -377,4 +432,46 @@ namespace Program
         Utils::Console::warning("target insert flag not found", TARGETS.at(target));
         return false;
     }
+    /* static */ void Convert::format_table(std::vector<std::string>& lines, const std::size_t& start,
+                                            const std::size_t& end)
+    {
+        std::vector<std::string> table_lines(lines.begin() + static_cast<int64_t>(start),
+                                             lines.begin() + static_cast<int64_t>(end));
+
+        uint16_t n_cols = static_cast<uint16_t>(std::count(table_lines[0].begin(), table_lines[0].end(), '|')-1);
+        std::vector<uint16_t> col_lengths(n_cols, 0);
+        for (const std::string& line : table_lines)
+        {
+            std::vector<std::string> cols = Utils::Misc::divide(line.substr(1, line.length() - 2), '|');
+            for (std::size_t i = 0; i < cols.size(); ++i)
+            {
+                if (cols[i].length() > col_lengths[i])
+                {
+                    col_lengths[i] = static_cast<uint16_t>(cols[i].length() + 2);
+                }
+            }
+        }
+
+        for (std::size_t line_index = start; line_index <= end; ++line_index)
+        {
+            std::vector<std::string> cols =
+                    Utils::Misc::divide(lines[line_index].substr(1, lines[line_index].length() - 2), '|');
+            std::string new_line = "| ";
+
+            for (std::size_t i = 0; i < cols.size(); ++i)
+            {
+                if (cols[i].length() >= col_lengths[i])
+                {
+                    cols[i] = std::string(" ").append(cols[i]).append(" | ");
+                }
+                else
+                {
+                    cols[i].append(std::string(col_lengths[i] - (cols[i].length() + 1), ' ')).append("| ");
+                }
+                new_line.append(cols[i]);
+            }
+            lines[line_index] = new_line;
+        }
+    }
+
 }// namespace Program

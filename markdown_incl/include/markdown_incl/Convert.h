@@ -129,6 +129,9 @@ namespace Program
         static bool insert_at_target(const Targets_e& target, const std::vector<std::string>& buffer,
                                      std::vector<std::string>& lines);
 
+        static void format_table(std::vector<std::string>& lines, const std::size_t& start, const std::size_t& end);
+        static void handle_tables(std::vector<std::string>& lines);
+
     private:
         static const std::vector<std::string> CHAPTERS;
         static const std::map<Targets_e, std::string> TARGETS;
@@ -147,7 +150,10 @@ namespace Program
         CHAP_NUMBERS = 8,
         DOC_INSERT = 9,
         TOC_INSERT = 10,
-        URL_INSERT = 11
+        URL_INSERT = 11,
+        TABLE_FORMAT = 12,
+        TABLE_START = 13,
+        TABLE_END = 14,
     };
 
 
